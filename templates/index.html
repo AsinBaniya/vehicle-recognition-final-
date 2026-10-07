@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroDrive — Intelligent Vehicle Recognition System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-glow top-left"></div>
+    <div class="background-glow bottom-right"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-brand">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-car-burst"></i>
+                </div>
+                <div>
+                    <h1 class="brand-title">NeuroDrive <span>AI</span></h1>
+                    <p class="brand-subtitle">Deep Learning Vehicle Recognition & Multi-Class Classification</p>
+                </div>
+            </div>
+            <div class="header-status">
+                <span class="status-indicator"></span>
+                <span class="status-text">CNN Model Active</span>
+                <span class="badge-classes">4 Vehicle Classes</span>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="main-grid">
+            <!-- Left Column: Upload & Controls -->
+            <section class="card upload-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-cloud-arrow-up"></i> Vehicle Image Input</h2>
+                    <span class="step-badge">Step 1</span>
+                </div>
+                
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="drop-zone" id="dropZone">
+                        <input type="file" id="fileInput" name="image" accept="image/*" class="file-input">
+                        
+                        <div class="drop-zone-content" id="dropZonePrompt">
+                            <div class="upload-icon-circle">
+                                <i class="fa-solid fa-camera"></i>
+                            </div>
+                            <h3>Drag & Drop Vehicle Image</h3>
+                            <p>or <span class="browse-link">browse files</span> from your computer</p>
+                            <span class="file-formats">Supports JPG, PNG, WEBP, JPEG (Max 16MB)</span>
+                        </div>
+
+                        <!-- Image Preview Box -->
+                        <div class="preview-wrapper hidden" id="previewWrapper">
+                            <img id="imagePreview" src="" alt="Selected vehicle preview">
+                            <button type="button" id="removeImgBtn" class="remove-btn" title="Remove image">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                            <div class="preview-overlay">
+                                <span id="previewMeta">vehicle_sample.jpg</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preset Sample Selector -->
+                    <div class="preset-section">
+                        <label class="preset-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Try Sample Preset Classes:</label>
+                        <div class="preset-buttons">
+                            <button type="button" class="preset-btn" data-class="Bus"><i class="fa-solid fa-bus"></i> Bus</button>
+                            <button type="button" class="preset-btn" data-class="Car"><i class="fa-solid fa-car-side"></i> Car</button>
+                            <button type="button" class="preset-btn" data-class="motorcycle"><i class="fa-solid fa-motorcycle"></i> Motorcycle</button>
+                            <button type="button" class="preset-btn" data-class="Truck"><i class="fa-solid fa-truck"></i> Truck</button>
+                        </div>
+                    </div>
+
+                    <!-- Action Controls -->
+                    <div class="card-actions">
+                        <button type="button" id="resetBtn" class="btn btn-secondary">
+                            <i class="fa-solid fa-rotate-left"></i> Reset
+                        </button>
+                        <button type="submit" id="classifyBtn" class="btn btn-primary" disabled>
+                            <i class="fa-solid fa-microchip"></i> Classify Vehicle
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Right Column: Recognition Results -->
+            <section class="card results-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-chart-pie"></i> Classification Results</h2>
+                    <span class="step-badge">Step 2</span>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">
+                        <i class="fa-solid fa-radar fa-spin-pulse"></i>
+                    </div>
+                    <h3>Awaiting Vehicle Image</h3>
+                    <p>Upload a vehicle image or choose a preset sample on the left to analyze its class and neural confidence scores.</p>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-state hidden" id="loadingState">
+                    <div class="scanner-anim">
+                        <div class="scanning-beam"></div>
+                        <i class="fa-solid fa-car-rear fa-beat"></i>
+                    </div>
+                    <h3>Extracting Spatial Features...</h3>
+                    <p>Running feedforward inference through 4-stage Deep Convolutional Network</p>
+                </div>
+
+                <!-- Active Results -->
+                <div class="results-content hidden" id="resultsContent">
+                    <!-- Top Predicted Class Card -->
+                    <div class="top-prediction-banner">
+                        <div class="pred-icon-box" id="predIconBox">
+                            <i class="fa-solid fa-car-side" id="predIcon"></i>
+                        </div>
+                        <div class="pred-text-box">
+                            <span class="pred-category-tag" id="predCategoryTag">Detected Category</span>
+                            <h2 class="pred-class-name" id="predClassName">Car</h2>
+                            <p class="pred-subtext" id="predSubtext">Passenger Transport Vehicle</p>
+                        </div>
+                        <div class="pred-confidence-badge">
+                            <div class="confidence-circle" id="confCircle">
+                                <span class="conf-value" id="predConfidence">98.4%</span>
+                                <span class="conf-label">Confidence</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Probability Distribution Breakdown -->
+                    <div class="distribution-card">
+                        <h3><i class="fa-solid fa-bars-progress"></i> Class Probability Distribution (Softmax)</h3>
+                        <div class="prob-bars-list" id="probBarsList">
+                            <!-- Populated dynamically via JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Model Architecture Summary Pill -->
+                    <div class="model-info-footer">
+                        <div class="info-pill"><i class="fa-solid fa-layer-group"></i> <strong>Model:</strong> Deep CNN (4 Conv Blocks)</div>
+                        <div class="info-pill"><i class="fa-solid fa-expand"></i> <strong>Input:</strong> 128x128 RGB</div>
+                        <div class="info-pill"><i class="fa-solid fa-bolt"></i> <strong>Softmax OvR</strong></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Academic & Architecture Details Section -->
+        <footer class="app-footer">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4><i class="fa-solid fa-graduation-cap"></i> Academic Project</h4>
+                    <p>Vehicle Recognition System developed for multi-class transportation classification across Bus, Car, Motorcycle, and Truck categories.</p>
+                </div>
+                <div class="footer-col">
+                    <h4><i class="fa-solid fa-shield-halved"></i> Pipeline Integrity</h4>
+                    <p>Stratified 70/15/15 train/val/test data split with strict data leakage prevention, Lanczos resampling, and multiclass OvR ROC evaluation.</p>
+                </div>
+                <div class="footer-col">
+                    <h4><i class="fa-solid fa-code"></i> Technology Stack</h4>
+                    <p>TensorFlow / Keras 2.x, Python Flask, NumPy, Scikit-Learn, HTML5, Vanilla CSS3, JavaScript ES6.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Vehicle Recognition System | Weeks 6, 7 &amp; 8 Final Submission</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
