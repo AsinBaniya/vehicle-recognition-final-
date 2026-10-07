@@ -32,6 +32,8 @@ Week_8/
 │
 ├── app.py                      # Flask REST API backend server
 ├── README.md                   # Complete documentation and user guide
+├── requirements.txt            # Runtime dependencies
+├── .python-version             # Vercel Python runtime version
 │
 ├── model/                      # Persisted trained model directory
 │   ├── best_vehicle_model.h5   # Legacy HDF5 model format
@@ -40,10 +42,10 @@ Week_8/
 ├── templates/
 │   └── index.html              # Modern, responsive HTML5 UI
 │
-└── static/
+└── public/
     ├── style.css               # Glassmorphic dark-theme CSS3 styles
-    ├── script.js              # Client-side upload, fetch, and animation logic
-    └── uploads/                # Temporary uploaded test image cache
+    ├── script.js               # Client-side upload, fetch, and animation logic
+    └── samples/                # Bundled vehicle images for preset buttons
 ```
 
 ---
@@ -112,6 +114,8 @@ When an image is submitted:
    $$\sigma(\mathbf{z})_i = \frac{e^{z_i}}{\sum_{j=1}^4 e^{z_j}}$$
 7. **JSON Response**: The class with the maximum probability ($\text{argmax}$) and per-class percentages are returned to the client and rendered smoothly.
 
+Uploaded images are processed in memory and are not saved on the server. The result includes a resized JPEG preview as a data URL, so it works with Vercel's temporary function filesystem.
+
 ---
 
 ## 7. Example Output
@@ -128,7 +132,7 @@ When an image is submitted:
     "Motorcycle": 0.12,
     "Truck": 1.01
   },
-  "image_url": "/static/uploads/upload_a7b3c2_car_sample.jpg",
+  "image_url": "data:image/jpeg;base64,...",
   "meta": {
     "type": "Passenger Vehicle",
     "badge": "Private Transport",

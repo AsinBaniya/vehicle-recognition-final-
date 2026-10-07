@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const cls = btn.getAttribute('data-class');
             // Try fetching from server static or sample image
             try {
-                const response = await fetch(`/api/sample/${cls}`);
+                const response = await fetch(`/samples/${cls.toLowerCase()}.jpg`);
                 if (response.ok) {
                     const blob = await response.blob();
                     const file = new File([blob], `sample_${cls.toLowerCase()}.jpg`, { type: 'image/jpeg' });
@@ -181,6 +181,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const conf = data.confidence;
         const probs = data.probabilities;
         const cfg = classConfig[pred] || { icon: 'fa-car', color: 'var(--accent-blue)', label: pred, desc: 'Vehicle' };
+
+        imagePreview.src = data.image_url;
 
         // Top prediction banner
         predClassName.textContent = pred;
